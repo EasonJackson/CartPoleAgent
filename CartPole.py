@@ -4,7 +4,8 @@ from Agent import MyAgent
 
 RENDER = True
 GAME = 'CartPole-v0'
-NUM_EPISODE = 100
+# GAME = "MountainCar-v0"
+NUM_EPISODE = 50
 
 
 def play_episode(env, agent):
@@ -72,7 +73,6 @@ def wrap_up_episode(xs, hs, dlogps, drs, curr_eps):
             agent.rmsprop_cache[k] = agent.decay_rate * agent.rmsprop_cache[k] + (1 - agent.decay_rate) * g**2
             agent.model[k] += agent.learning_rate * g / (np.sqrt(agent.rmsprop_cache[k]) + 1e-5)
             agent.grad_buffer[k] = np.zeros_like(v)
-
 
 
 def save_state(reward_sum, running_reward):

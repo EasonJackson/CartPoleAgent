@@ -1,23 +1,14 @@
 import numpy as np
+from AgentPrototype import AgentPrototype as AP
 
 
 # The agent defined to perform actions after learning
-class MyAgent(object):
+class MyAgent(AP):
     RESUME = False
     RENDER = False
 
     def __init__(self, env, D):
-        self.env = env
-        self.num_neuron = 200
-        self.batch_size = 10
-        self.learning_rate = 1e-4
-        self.gamma = 0.99  # discount factor for reward
-        self.decay_rate = 0.99
-        self.D = D
-        self.model = {}
-        self.grad_buffer = {}
-        self.rmsprop_cache = {}
-        self.init_model()
+        AP.__init__(self, env, D)
 
     def pick_next_action(self, prev_x, observation):
         """
@@ -29,13 +20,6 @@ class MyAgent(object):
         aprob, h = self.policy_forward(observation)
         action = 0 if np.random.uniform() < aprob else 1
         return action, aprob, h, x, curr_x
-
-
-    def init_model(self):
-        self.model['W1'] = np.random.randn(self.num_neuron, self.D) / np.sqrt(self.D)
-        self.model['W2'] = np.random.randn(self.num_neuron) / np.sqrt(self.num_neuron)
-        self.grad_buffer = {k : np.zeros_like(v) for k, v in self.model.items()}
-        self.rmsprop_cache = {k : np.zeros_like(v) for k, v in self.model.items()}
 
     def sigmoid(self, x):
         return 1. / (1. + np.exp(-x))
