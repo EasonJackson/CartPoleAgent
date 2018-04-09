@@ -1,17 +1,18 @@
 import gym
 import numpy as np
-from CartPoleAgent import CartPoleAgent
-import pickle
+from MountainCarAgent import MountainCarAgent
+from RandomAgent import RandomAgent
 
 
 '''
-Train a simple agent to control the cart n stick.
+Train a simple agent to control the mountain car.
+
+
 '''
 
 RENDER = True
-GAME = 'CartPole-v0'
-NUM_EPISODE = 10
-resume = True
+GAME = "MountainCar-v0"
+NUM_EPISODE = 1
 
 
 def play_episode(env, agent):
@@ -29,7 +30,7 @@ def play_episode(env, agent):
                 env.render()  # render the game
 
             action, aprob, h, x, curr_x = agent.pick_next_action(prev_x, observation)
-            record_intermediates(xs, x, hs, h, dlogps, aprob, reward)
+            record_intermediates(xs, x, hs, h, dlogps, aprob, action)
             observation, reward, done, info = env.step(action)
             reward_sum += reward  # adding up the reward in the episode
             drs.append(reward)
@@ -37,7 +38,7 @@ def play_episode(env, agent):
             if done:  # the episode is done
                 print("Episode number:{}".format(curr_eps))
                 wrap_up_episode(xs, hs, dlogps, drs, curr_eps)
-                save_state(reward_sum, running_reward, curr_eps)
+                save_state(reward_sum, running_reward)
                 reward_sum = 0
                 prev_x = 0
                 observation = env.reset()
@@ -53,10 +54,10 @@ def initialize_state():
     return prev_x, xs, hs, dlogps, drs, running_reward, reward_sum, episode_reward, observation
 
 
-def record_intermediates(xs, x, hs, h, dlogps, aprob, reward):
+def record_intermediates(xs, x, hs, h, dlogps, aprob, action):
     xs.append(x)  # observation
     hs.append(h)  # hidden state
-    y = 1 if reward >= 0 else 0  # a "fake label"
+    y = 1 if action == 2 else 0  # a "fake label"
     dlogps.append(y - aprob)
 
 
@@ -68,13 +69,11 @@ def wrap_up_episode(xs, hs, dlogps, drs, curr_eps):
 
     discounted_epr = agent.discount_rewards(epr)
     discounted_epr -= np.mean(discounted_epr)
-    if (np.std(discounted_epr)) != 0:
-        discounted_epr /= np.std(discounted_epr)
+    discounted_epr /= np.std(discounted_epr)
 
     epdlogp *= discounted_epr
     grad = agent.policy_backward(epx, eph, epdlogp)
-    for k in agent.model:
-        agent.grad_buffer[k] += grad[k]
+    for k in agent.model: agent.grad_buffer[k] += grad[k]
 
     if curr_eps % agent.batch_size == 0:
         for k, v in agent.model.items():
@@ -84,18 +83,19 @@ def wrap_up_episode(xs, hs, dlogps, drs, curr_eps):
             agent.grad_buffer[k] = np.zeros_like(v)
 
 
-def save_state(reward_sum, running_reward, episode_number):
+def save_state(reward_sum, running_reward):
     running_reward = reward_sum if running_reward is None else running_reward * 0.99 + reward_sum * 0.01
     # print
     # 'resetting env. episode reward total was %f. running mean: %f' % (reward_sum, running_reward)
-    if episode_number % 100 == 0: pickle.dump(agent.model, open('cartpole.p', 'wb'))
+    #if episode_number % 100 == 0: pickle.dump(model, open('save.p', 'wb'))
 
 
 if __name__ == "__main__":
     env = gym.make(GAME)
     env.reset()
+
+    # print(env.action_space)
     observation, _, _, _ = env.step(env.action_space.sample())
-    agent = CartPoleAgent(env, len(observation))
-    agent.init_model(resume)
+    agent = MountainCarAgent(env, len(observation))
     play_episode(env, agent)
 

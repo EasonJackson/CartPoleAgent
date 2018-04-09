@@ -1,18 +1,33 @@
 import numpy as np
+import pickle
 from AgentPrototype import AgentPrototype as AP
 
 
-# The agent defined to perform actions after learning
-class MyAgent(AP):
-    RESUME = False
-    RENDER = False
-
+# Agents that inherit from AgentPrototype
+class CartPoleAgent(AP):
     def __init__(self, env, D):
         AP.__init__(self, env, D)
 
+    def init_model(self, resume_flag):
+        '''
+        Initialize the model of this agent.
+        Model by default have two layers of neuron networks.
+        :param resume_flag: A boolean flag,
+            true indicating loading a model from exist;
+            false indicating create a new model.
+        '''
+        if resume_flag:
+            self.model = pickle.load(open("cartpole.p", "rb"))
+        else:
+            self.model['W1'] = np.random.randn(self.num_neuron, self.D) / np.sqrt(self.D)
+            self.model['W2'] = np.random.randn(self.num_neuron) / np.sqrt(self.num_neuron)
+
+        self.grad_buffer = {k: np.zeros_like(v) for k, v in self.model.items()}
+        self.rmsprop_cache = {k: np.zeros_like(v) for k, v in self.model.items()}
+
     def pick_next_action(self, prev_x, observation):
         """
-        observation is the current screen image. reward is the current reward in the time step
+        observation is the current screen image.
         """
         # cur_x = self.prepro(observation)
         curr_x = np.mat(observation)
@@ -31,8 +46,8 @@ class MyAgent(AP):
         discounted_r = np.zeros_like(r)
         running_add = 0
         for t in reversed(range(0, r.size)):
-            if r[t] != 0:
-                running_add = 0
+            # if r[t] != 0:
+            #     running_add = 0
             running_add = running_add * self.gamma + r[t]
             discounted_r[t] = running_add
         return discounted_r
