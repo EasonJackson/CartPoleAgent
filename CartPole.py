@@ -8,10 +8,10 @@ import pickle
 Train a simple agent to control the cart n stick.
 '''
 
-RENDER = True
+RENDER = False
 GAME = 'CartPole-v0'
 NUM_EPISODE = 10
-resume = True
+resume = False
 
 
 def play_episode(env, agent):
