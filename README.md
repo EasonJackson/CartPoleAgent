@@ -97,6 +97,15 @@ A two layer neuron network is used for training the agent.
 
 - Policy backward
 
+## Demo
+
+### Pre-training
+
+(https://github.com/EasonJackson/CartPoleAgent/blob/master/assets/cartpole%2010.gif)
+
+### Post-training
+
+(https://github.com/EasonJackson/CartPoleAgent/blob/master/assets/cartpole%201000.gif)
 
 ## Links
 
